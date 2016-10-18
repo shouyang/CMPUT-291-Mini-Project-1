@@ -50,4 +50,4 @@ def main():
     conn = create_Connection("hospital.db")
     role = login_main(conn)
 if __name__ == "__main__":
-    main():
+    main()
