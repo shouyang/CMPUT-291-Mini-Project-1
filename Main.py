@@ -12,11 +12,12 @@ def login_menu():
     print("====")
     print("A - Login as Existing User")
     print("B - Create New User")
+    print("C - Exit")
     print("====")
     print("Choose an option by typing in the corresponding letter.")
     while True:
         usr_input = raw_input("OPTION> ")
-        if usr_input.upper() in ('A','B'):
+        if usr_input.upper() in ('A','B', 'C'):
             return usr_input.upper()
         else:
             print ("Input value not valid, please retry your option.")
@@ -47,7 +48,7 @@ def login_create(conn):
     while True:
         role = raw_input("Role (D/N/A): ")
         if role.upper() in ('D','N','A'):
-            role = role.upper
+            role = str(role.upper())
             break
         else:
             print("Please select fron the valid roles of (D/N/A)")
@@ -100,12 +101,16 @@ def main():
     # Create Inital Database Connection
     conn = create_Connection("hospital.db")
     # Allow the user to select their inital task
-    usr_input = login_menu()
-    if usr_input == 'A':
-        login_main(conn)
-    elif usr_input == 'B':
-        login_create(conn)
-    # Get associated information, connect to module.
+    while  True:
+        usr_input = login_menu()
+        if usr_input == 'A':
+            login_main(conn)
+        elif usr_input == 'B':
+            login_create(conn)
+        elif usr_input == 'C':
+            break
+
+        # Get associated information, connect to module.
     
     
 if __name__ == "__main__":
