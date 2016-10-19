@@ -4,6 +4,7 @@
 import sqlite3
 import datetime
 import base64
+import getpass # Used to hide passwords on input prompts
 # Login Text
 def login_menu():
     print("CMPUT 291 - Mini Project 1")
@@ -39,8 +40,42 @@ def login_main(conn):
 
 def login_create(conn):
     print("Please provide a username and password to create a new account.")
+    
     username = raw_input("Username: ")
-    password = raw_input("Password: ")
+    name     = raw_input("Name: ")
+
+    while True:
+        role = raw_input("Role (D/N/A): ")
+        if role.upper() in ('D','N','A'):
+            role = role.upper
+            break
+        else:
+            print("Please select fron the valid roles of (D/N/A)")
+            continue
+
+    while True:
+        password = str(getpass.getpass("Password: "))
+        print ("Please confirm your password:")
+        password_confirmation = str(getpass.getpass("Password: "))
+
+        if password == password_confirmation:
+            # Find a suitable ID for this entry
+            query = "SELECT MAX(staff_id) FROM staff"
+            cursor = conn.cursor()
+            cursor.execute(query)
+            ID = int(cursor.fetchone()[0]) + 1
+            # Execute the query to create new account
+            Values = (str(ID),str(role),str(name),str(username),str(password))
+            cursor.execute("INSERT INTO staff values (?,?,?,?,?)",Values)
+            conn.commit()
+
+            print ("Account Creation Sucessful")
+            break
+        else:
+            print ("Password and Password Confirmation were not the same.")
+            print ("Please retry the Password and Password Confirmation prompt.")
+            continue
+
     return 0
 # Basic Encryption and Decryption, requires base64
 def encode(key, clear):
