@@ -15,6 +15,7 @@ def login_menu():
     print("C - Exit")
     print("====")
     print("Choose an option by typing in the corresponding letter.")
+    # Handles user menu choice
     while True:
         usr_input = raw_input("OPTION> ")
         if usr_input.upper() in ('A','B', 'C'):
@@ -31,20 +32,37 @@ def create_Connection(dblink):
         except expression as identifier:
             print ("The following database could not be found locally")
             print (dblink)
+            print (identifier)
             dblink = input("Please input the path to the SQLite 3 DB: ")
 # Login Functions
 def login_main(conn):
+    # Get user input
     print("Please provide a username and password.")
     username = raw_input("Username: ")
-    password = raw_input("Password: ")
+    password = str(getpass.getpass("Password: "))
+    # Query database for matching profiles.
+    cursor = conn.cursor()
+    cursor.execute("SELECT staff_id, name, role, login FROM staff WHERE login = ? AND password = ?", (username,password))
+        
+
+    if cursor.rowcount >= 1:
+        print ("Number of Matching Logins: " + cursor.rowcount )
+        for row in cursor:      
+                print ("Staff_id: " + str(row[0]) )
+                print ("Name: " + str(row[1]) )
+                print ("Role: "  + str(row[2]) )
+                print ("Login: "  + str(row[3]) )
+    else:
+        print ("No Valid Login Found")
+        print ("Returning to main menu.")
     return 0
 
 def login_create(conn):
     print("Please provide a username and password to create a new account.")
-    
+    # Basic Identification Information
     username = raw_input("Username: ")
     name     = raw_input("Name: ")
-
+    # Role Selection
     while True:
         role = raw_input("Role (D/N/A): ")
         if role.upper() in ('D','N','A'):
@@ -53,7 +71,7 @@ def login_create(conn):
         else:
             print("Please select fron the valid roles of (D/N/A)")
             continue
-
+    # Password Selection with Confirmation
     while True:
         password = str(getpass.getpass("Password: "))
         print ("Please confirm your password:")
@@ -76,7 +94,6 @@ def login_create(conn):
             print ("Password and Password Confirmation were not the same.")
             print ("Please retry the Password and Password Confirmation prompt.")
             continue
-
     return 0
 # Basic Encryption and Decryption, requires base64
 def encode(key, clear):
