@@ -32,7 +32,6 @@ def Get_AutoID(conn,key,table):
 
 # Task Handler Dependents
 	# Function A
-		# Function A Text Segments
 def NUR_A_MainText():
 	print("\n" * 2)
 	print("====")
@@ -42,7 +41,7 @@ def NUR_A_MainText():
 	print("A new chart will be created, admission will be the current time.")
 	print("====")
 	return 0
-def NUR_A_CreatePatientANDChart(conn,StaffID,StaffName,patient_id):
+def NUR_A_CreatePatient(conn,StaffID,StaffName,patient_id):
 	while True:
 		print("\n" * 2)
 		print("No ID provided, creating new patient record.")
@@ -81,7 +80,7 @@ def NUR_A_CreatePatientANDChart(conn,StaffID,StaffName,patient_id):
 				cursor.execute(query,(i_hcno,i_name,i_age_group,i_address,i_phone,i_emg_phone))
 				conn.commit()
 				print ("Patient Creation Sucessful.")
-				return 0
+				return i_hcno
 			except Exception, e:
 				print ("Database rejected entry")
 				print (e)
@@ -157,6 +156,25 @@ def NUR_A_CloseChart(conn,chart_id):
 		print ("Retry Entry")
 		print ("\n" * 3)
 		return 0
+	# Function B
+def NUR_B_MainText():
+	print("\n" * 2)
+	print("====")
+	print("Function B - Close Chart For Patient")
+	print("Select Patient and Confirm Chart to Close.")
+	print("====")
+	return 0
+def NUR_B_CheckAllOpenCharts(conn):
+	query = "SELECT * FROM charts WHERE edate IS NULL"
+	cursor = conn.cursor()
+	cursor.execute(query)
+	# Print open cases to user.
+	print ("The following open charts for patients have been found.")
+
+	for row in cursor:
+		print ("Chart ID: " + str(row[0]) + "| Patient HCNO: " + str(row[1]) + "| Addmission Date: " + str(row[2]))
+
+	return 0
 # Task Handler Functions
 def NUR_A(conn,StaffID,StaffName):
 	NUR_A_MainText() # Boiler Plate Text
@@ -164,7 +182,8 @@ def NUR_A(conn,StaffID,StaffName):
 		patient_HCNO = raw_input("PATIENT HCNO (ENTER OR LEAVE BLANK)> ")
 		# If input is blank, go to create profile.
 		if patient_HCNO == "":
-			NUR_A_CreatePatientANDChart(conn,StaffID,StaffName,patient_HCNO)
+			patient_HCNO = NUR_A_CreatePatient(conn,StaffID,StaffName,patient_HCNO)
+			NUR_A_CreateChart(conn,patient_HCNO)
 			break
 		# If input is a integer.
 		elif RepresentsInt(patient_HCNO):
@@ -208,7 +227,25 @@ def NUR_A(conn,StaffID,StaffName):
 			continue
 	return 0
 def NUR_B(conn,StaffID,StaffName):
-	print("Function B has been called.")
+	NUR_B_MainText()
+	NUR_B_CheckAllOpenCharts(conn)
+	while True: # Main Loop
+		usr_sel = raw_input("CHART ID> ")
+		if RepresentsInt(usr_sel):
+			cursor = conn.cursor()
+			# Build list of valid choices.
+			cursor.execute("SELECT DISTINCT(chart_id) FROM charts WHERE edate IS NULL")
+			vaild_charts = []
+			for row in cursor:
+				vaild_charts.append(int(row[0]))
+			# Let user select a value.
+			if int(usr_sel) in vaild_charts:
+				NUR_A_CloseChart(conn,int(usr_sel))
+				break
+			else:
+				print ("Not a valid chart, retry.")
+		else:
+			print ("Not a valid Integer, retry.")
 	return 0
 def NUR_C(conn,StaffID,StaffName):
 	print("Function C has been called.")
