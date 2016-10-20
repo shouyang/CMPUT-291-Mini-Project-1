@@ -10,6 +10,26 @@ def RepresentsInt(s):
         return True
     except ValueError:
         return False
+def Get_Input_Fixed_Length(prompt, L):
+	while True:
+		x = raw_input(prompt)
+		if len(x) <= L:
+			return x
+		else:
+			print ("Input Length Exceeds Requirement.")
+			continue
+def Get_AutoID(conn,key,table):
+	# Get an unused ID
+	query = "SELECT MAX(" +str(key)+") FROM " + str(table)
+	cursor = conn.cursor()
+	cursor.execute(query)
+	try:
+		auto_id = (int(cursor.fetchone()[0]) + 1)
+		return auto_id 
+	except:
+		auto_id = 1
+		return auto_id
+
 # Task Handler Dependents
 def NUR_A_MainText():
 	print("\n" * 2)
@@ -20,77 +40,130 @@ def NUR_A_MainText():
 	print("A new chart will be created, admission will be the current time.")
 	print("====")
 	return 0
+def NUR_A_CreatePatientANDChart(conn,StaffID,StaffName,patient_id):
+	while True:
+		print("\n" * 2)
+		print("No ID provided, creating new patient record.")
+		
+		auto_id = Get_AutoID(conn,"hcno","patients")
+		# Get information from user.
+		while True:
+			i_hcno = raw_input("HCNO (Leave Blank For Autogeneration)> ")
+			if RepresentsInt(i_hcno):
+				break
+			elif  i_hcno == "":
+				i_hcno = str(auto_id)
+				break
+			else:
+				print ("HCNO must be an integer")
+				continue
+		i_name = Get_Input_Fixed_Length("NAME> ",  15)
+		i_age_group = Get_Input_Fixed_Length("AGE GROUP> ", 5)
+		i_address = Get_Input_Fixed_Length("ADDRESS> ", 30)
+		i_phone = Get_Input_Fixed_Length("PHONE (ONLY DIGITS)> ", 10)
+		i_emg_phone = Get_Input_Fixed_Length("EMG PHONE (ONLY DIGITS)> ", 10)
+		# Print the information for the user to confirm. 
+		print("==")
+		print("HCNO: " + i_hcno)
+		print("NAME: " + i_name)
+		print("AGE GROUP: " + i_age_group)
+		print("ADDRESS: " + i_address)
+		print("PHONE: " + i_phone)
+		print("EMG PHONE: " + i_emg_phone)
+		
+		usr_confirm = raw_input("CONFIRM? (Y/N/Q)> ").upper()
+		if usr_confirm == "Y":	
+			query = "INSERT INTO patients VALUES (?,?,?,?,?,?);"
+			try:
+				cursor.execute(query,(i_hcno,i_name,i_age_group,i_address,i_phone,i_emg_phone))
+				conn.commit()
+				print ("Patient Creation Sucessful.")
+				return 0
+			except Exception, e:
+				print ("Database rejected entry")
+				print (e)
+				print ("==")
+				print ("Retry Entry")
+				print ("\n" * 3)
+				continue
+		elif usr_confirm == "Q":
+			print ("Quit Selected")
+			return 0
+		else:
+			print("No confirmation selected")
+			print("Restarting Entry")
+			print ("\n" * 3)
+			continue
+	return 0
+def NUR_A_CheckPatientID(conn, patient_HCNO):
+	query = "SELECT COUNT(*) FROM patients WHERE hcno = ?"
+	cursor = conn.cursor()
+	cursor.execute(query,(patient_HCNO,))
+	if int(cursor.fetchone()[0])	> 0:
+		return True 
+	else:
+		return False
+def NUR_A_CheckOpenCharts(conn,patient_HCNO):
+	# Tests to see if there are any unclosed cases for the patient.
+	query = "SELECT COUNT(*) FROM chart WHERE hcno = ? AND edate IS NULL"
+	cursor = conn.cursor()
+	cursor.execute(query,(patient_HCNO,))
+	if int(cursor.fetchone()[0])	> 0:
+		# There are unclosed cases, must prompt before opening another.
+		query = "SELECT * FROM chart WHERE hcno = ?"
+		cursor = conn.cursor()
+		cursor.execute(query,(patient_HCNO,))
+		# Print open cases to user.
+		print ("The following open charts for patient:" + str(patient_HCNO) + " have been found.")
+		
+		i_ = raw_input("")
+		for row in cursor:
+			print (str(row[0]))
+			print (str(row[1]))
+			print (str(row[2]))
+		return True
+	else:
+		# There are no unclosed cases, go directly to case creation.
+		return False
+def NUR_A_CreateChart(conn,patient_HCNO):
+	query = "INSERT INTO charts VALUES ()"
 # Task Handler Functions
 def NUR_A(conn,StaffID,StaffName):
 	NUR_A_MainText()
 	while True:
-		patient_id = raw_input("PATIENT ID (ENTER OR LEAVE BLANK)> ")
-		if patient_id == "":
-			print("No ID provided, creating new patient record.")
-			# Get an unused ID
-			query = "SELECT MAX(hcno) FROM patients"
-			cursor = conn.cursor()
-			cursor.execute(query)
-			try:
-				auto_id = (int(cursor.fetchone()[0]) + 1) 
-			except:
-				auto_id = 1
-			# Get information from user.
-			while True:
-				i_hcno = raw_input("HCNO (Leave Blank For Autogeneration)> ")
-				if RepresentsInt(i_hcno):
-					break
-				elif  i_hcno == "":
-					i_hcno = str(auto_id)
+		patient_HCNO = raw_input("PATIENT HCNO (ENTER OR LEAVE BLANK)> ")
+		if patient_HCNO == "":
+			NUR_A_CreatePatientANDChart(conn,StaffID,StaffName,patient_HCNO)
+			break
+		elif RepresentsInt(patient_HCNO): # Enters a valid integer
+			if NUR_A_CheckPatientID(conn, patient_HCNO): # Valid HCNO
+				if (NUR_A_CheckOpenCharts(conn,patient_HCNO)):
+					print ("\n")
+					print ("====")
+					print ("OPTION A: Close All Existing Charts And Create New")
+					print ("OPTION B: Quit And Do Not Create Chart")
+
+					while True:
+						usr_sel = str(raw_input("OPTION> ")).upper()
+						if usr_sel == 'A':
+							pass
+							break
+						if usr_sel == 'B':
+							pass
+							break
+						else:
+							print ("Input Not valid, Retry")
+							continue
 					break
 				else:
-					print ("HCNO must be an integer")
-					continue
-			i_name = raw_input("NAME> ")
-			i_age_group = raw_input("AGE GROUP> ")
-			i_address = raw_input("ADDRESS> ")
-			i_phone = raw_input("PHONE> ")
-			i_emg_phone = raw_input("EMG PHONE> ")
-			# Print the information for the user to confirm. 
-			print("==")
-			print("HCNO: " + i_hcno)
-			print("NAME: " + i_name)
-			print("AGE GROUP: " + i_age_group)
-			print("ADDRESS: " + i_address)
-			print("PHONE: " + i_phone)
-			print("EMG PHONE: " + i_emg_phone)
-			
-			usr_confirm = raw_input("CONFIRM? (Y/N/Q)> ").upper()
-			if usr_confirm == "Y":	
-				query = "INSERT INTO patients VALUES (?,?,?,?,?,?);"
-				try:
-					cursor.execute(query,(i_hcno,i_name,i_age_group,i_address,i_phone,i_emg_phone))
-					conn.commit()
-					print ("Patient Creation Sucessful.")
+					NUR_A_CreateChart(conn,patient_HCNO)
 					break
-				except Exception, e:
-					print ("Database rejected entry")
-					print (e)
-					print ("==")
-					print ("Retry Entry")
-					print ("\n" * 3)
-					continue
-			elif usr_confirm == "Q":
-				print ("Quit Selected")
-				break
-			else:
-				print("No confirmation selected")
-				print("Restarting Entry")
-				print ("\n" * 3)
-				continue
-		elif RepresentsInt(patient_id): # Enters a valid integer
-			if True: # Valid HCNO
-				pass 
 			else:	 # Unknown HCNO
-				pass
-
+				print ("No HCNO found. Retry one of the options.")
+				break
 		else:
-			pass
+			print("Input was not blank or a valid integer. Retry.")
+			continue
 	return 0
 def NUR_B(conn,StaffID,StaffName):
 	print("Function B has been called.")
