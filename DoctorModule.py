@@ -17,10 +17,12 @@ def DOC_D(conn,StaffID,StaffName):
 	print("Function D has been called.")
 	return 0
 def DOC_E(conn,StaffID,StaffName):
-	print("Function E has been called.")
+	print("Logging Off")
+	conn.Close()
 	return 0
 
 def DOC_Text(StaffID,StaffName):
+	print ("\n")
 	print ("Doctor Module")
 	print ( str(StaffID) + " | " + str(StaffName) + " | " + str(datetime.datetime.now() ) )
 	print ("====")
@@ -31,7 +33,7 @@ def DOC_Text(StaffID,StaffName):
 	print ("E - Logout and Exit")
 	print ("====")
 
-def DOC(conn = "Test - No Connection", StaffID = "111", StaffName = "John Doe"):
+def DOC(conn = sqlite3.connect("hospital.db"), StaffID = "111", StaffName = "John Doe"):
 	# <TODO> Consider conn the sql database connection
 	while True:
 		DOC_Text(StaffID,StaffName)

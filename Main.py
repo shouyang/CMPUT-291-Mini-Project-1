@@ -5,8 +5,13 @@ import sqlite3
 import datetime
 import base64
 import getpass # Used to hide passwords on input prompts
+from DoctorModule import * 
+from NurseModule import * 
+from AdminModule import * 
+
 # Login Text
 def login_menu():
+    print ("\n")
     print("CMPUT 291 - Mini Project 1")
     print("Hospital Database System")
     print("====")
@@ -36,27 +41,34 @@ def create_Connection(dblink):
             dblink = input("Please input the path to the SQLite 3 DB: ")
 # Login Functions
 def login_main(conn):
-    # Get user input
-    print("Please provide a username and password.")
-    username = raw_input("Username: ")
-    password = str(getpass.getpass("Password: "))
-    # Query database for matching profiles.
-    cursor = conn.cursor()
-    cursor.execute("SELECT staff_id, name, role, login FROM staff WHERE login = ? AND password = ?", (username,password))
-        
-
-    if cursor.rowcount >= 1:
-        print ("Number of Matching Logins: " + cursor.rowcount )
+    while True:  
+        # Get user input
+        print("Please provide a username and password.")
+        username = raw_input("Username: ")
+        password = str(getpass.getpass("Password (Input Hidden): "))
+        # Query database for matching profiles.
+        cursor = conn.cursor()
+        cursor.execute("SELECT staff_id, name, role, login FROM staff WHERE login = ? AND password = ?", (username,password))
+        # Allow user to select the login they require.
         for row in cursor:      
                 print ("Staff_id: " + str(row[0]) )
                 print ("Name: " + str(row[1]) )
                 print ("Role: "  + str(row[2]) )
                 print ("Login: "  + str(row[3]) )
-    else:
-        print ("No Valid Login Found")
-        print ("Returning to main menu.")
+                while  True:
+                    print ("Use this account?")
+                    user_sel = raw_input("OPTION (Y/N)>").upper()
+                    if user_sel == "Y":
+                        return [str(row[0]), str(row[1]), str(row[2]), str(row[3])]
+                    elif user_sel == "N":
+                        break
+                    else:
+                        print ("Input Unrecognized.")
+        # Should only run if login is unrecognized.
+        print ("Login Unknown / Invalid or reached end of accounts found.")
+        print ("Please retry.")
+        continue
     return 0
-
 def login_create(conn):
     print("Please provide a username and password to create a new account.")
     # Basic Identification Information
@@ -74,7 +86,7 @@ def login_create(conn):
     # Password Selection with Confirmation
     while True:
         password = str(getpass.getpass("Password: "))
-        print ("Please confirm your password:")
+        print ("Please confirm your password (Input Hidden):")
         password_confirmation = str(getpass.getpass("Password: "))
 
         if password == password_confirmation:
@@ -121,12 +133,19 @@ def main():
     while  True:
         usr_input = login_menu()
         if usr_input == 'A':
-            login_main(conn)
+            staff_id,name,role,username = login_main(conn)
+            if role == "D":
+                DOC(conn,staff_id,name)
+            elif role == "N":
+                NUR(conn,staff_id,name)
+            elif role == "A":
+                ADM(conn,staff_id,name)
+            else:
+                print ("Role not recognized")
         elif usr_input == 'B':
             login_create(conn)
         elif usr_input == 'C':
             break
-
         # Get associated information, connect to module.
     
     
