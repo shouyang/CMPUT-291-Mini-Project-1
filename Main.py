@@ -5,6 +5,7 @@ import sqlite3
 import datetime
 import base64
 import getpass # Used to hide passwords on input prompts
+import hashlib
 from DoctorModule import * 
 from NurseModule import * 
 from AdminModule import * 
@@ -46,6 +47,10 @@ def login_main(conn):
         print("Please provide a username and password.")
         username = raw_input("Username: ")
         password = str(getpass.getpass("Password (Input Hidden): "))
+
+        # Encrypt the password, such that we can compare against the encrypted password.capitalize
+        password = hashlib.sha224(password).hexdigest()
+
         # Query database for matching profiles.
         cursor = conn.cursor()
         cursor.execute("SELECT staff_id, name, role, login FROM staff WHERE login = ? AND password = ?", (username,password))
@@ -70,6 +75,10 @@ def login_main(conn):
         continue
     return 0
 def login_create(conn):
+    # Disalllows access to most people.
+    if  "DEMO123" != str(getpass.getpass("Provide Key Phrase: ")):
+        return 0
+
     print("Please provide a username and password to create a new account.")
     # Basic Identification Information
     username = raw_input("Username: ")
@@ -90,6 +99,8 @@ def login_create(conn):
         password_confirmation = str(getpass.getpass("Password: "))
 
         if password == password_confirmation:
+            # Encryption
+            password = hashlib.sha224(password).hexdigest()
             # Find a suitable ID for this entry
             query = "SELECT MAX(staff_id) FROM staff"
             cursor = conn.cursor()

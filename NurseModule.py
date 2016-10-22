@@ -271,7 +271,6 @@ def NUR_Text(StaffID,StaffName):
 	print ("====")
 
 def NUR(conn = sqlite3.connect("hospital.db"), StaffID = "111", StaffName = "John Doe"):
-	# <TODO> Consider conn the sql database connection
 	while True:
 		NUR_Text(StaffID,StaffName)
 		USR_Selection = str(raw_input("OPTION> "))
