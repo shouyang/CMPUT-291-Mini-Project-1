@@ -35,16 +35,71 @@ def DOC_A(conn,StaffID,StaffName):
 	if select_chart not in chart_number_list:
 		print ("Invalid chart number entry")
 	else:
-		cursor.execute ("SELECT * FROM charts, symptoms, diagnoses, medications WHERE symptoms.chart_id = '%d' AND medications.chart_id = '%d' AND diagnoses.chart_id = '%d'" % select_chart)
+		cursor.execute ("SELECT s.symptom, d.diagnosis FROM charts c, symptoms s, diagnoses d, medications m WHERE s.chart_id = '%d' AND m.chart_id = '%d' AND d.chart_id = '%d' " %(select_chart, select_chart, select_chart))
+		print ("Chart number: "+str(select_chart))
 		print(cursor.fetchall())
 
 	return 0
 
 def DOC_B(conn,StaffID,StaffName):
-	print("Function B has been called.")
+	
+	cursor = conn.cursor()
+	patient_name = raw_input ("Enter patient hcno: ")
+	print ("Open charts for patient number " + patient_name + ":")
+	chart_number_list = []
+	
+	if patient_name.isdigit():
+		patient_name = int(patient_name)
+		cursor.execute("SELECT * FROM charts WHERE charts.hcno = '%d'" % patient_name)
+		chart_list = cursor.fetchall()
+		sorted(chart_list, key = itemgetter(2))
+		
+		for i in chart_list:
+			chart_number_list.append(int(i[0]))
+			if i[3] == None:
+				#print ("Open charts for patient: "+str(patient_name))
+				print("Chart "  + i[0])
+				
+		print ("====")
+		select_chart = int(raw_input ("Enter open chart number: "))
+		if select_chart not in chart_number_list:
+			print("Invalid chart ID")
+		else:
+			symptom_text = raw_input("Enter symptom: ")
+			cursor.execute( "INSERT INTO symptoms VALUES (?,?,?,?,?)", (int(patient_name), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(symptom_text) ))
+			conn.commit()	
+					
+				
 	return 0
 def DOC_C(conn,StaffID,StaffName):
-	print("Function C has been called.")
+	
+	cursor = conn.cursor()
+	patient_name = raw_input ("Enter patient hcno: ")
+	print ("Open charts for patient number " + patient_name + ":")
+	chart_number_list = []
+	
+	if patient_name.isdigit():
+		patient_name = int(patient_name)
+		cursor.execute("SELECT * FROM charts WHERE charts.hcno = '%d'" % patient_name)
+		chart_list = cursor.fetchall()
+		sorted(chart_list, key = itemgetter(2))
+		
+		for i in chart_list:
+			chart_number_list.append(int(i[0]))
+			if i[3] == None:
+				#print ("Open charts for patient: "+str(patient_name))
+				print("Chart "  + i[0])
+				
+		print ("====")	
+		select_chart = int(raw_input ("Enter open chart number: "))
+		if select_chart not in chart_number_list:
+			print("Invalid chart ID")
+		else:
+			diagnoses_text = raw_input("Enter diagnoses: ")
+			cursor.execute( "INSERT INTO diagnoses VALUES (?,?,?,?,?)", (int(patient_name), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(diagnoses_text) ))
+			conn.commit()
+			
+			
 	return 0
 def DOC_D(conn,StaffID,StaffName):
 	print("Function D has been called.")
@@ -53,6 +108,27 @@ def DOC_E(conn,StaffID,StaffName):
 	print("Logging Off")
 	conn.Close()
 	return 0
+
+def get_charts(x):
+	cursor = conn.cursor()
+	#patient_name = raw_input ("Enter patient hcno: ")
+	patient_name = int(x)
+	print ("Charts for patient number " + patient_name + ":")
+	chart_number_list = []
+	
+	if patient_name.isdigit():
+		patient_name = int(patient_name)
+		cursor.execute("SELECT * FROM charts WHERE charts.hcno = '%d'" % patient_name)
+		chart_list = cursor.fetchall()
+		sorted(chart_list, key = itemgetter(2))
+		
+		for i in chart_list:
+			chart_number_list.append(int(i[0]))
+			
+			if i[3] == None:				
+				print("Chart " + i[0] + " is open")
+			else:
+				print("Chart " + i[0] + " is closed")	
 
 def DOC_Text(StaffID,StaffName):
 	print ("\n")
