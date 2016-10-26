@@ -89,8 +89,52 @@ def ADM_A(conn,StaffID,StaffName):
 			print("Prescribed "+ str(doctorDict[x].drugs[y]) +" units of " + str(y))
 		
 	return 0
+
+def TEST_B(cursor, cat):
+	for x in cursor:
+		if x[0] == cat:
+			print(str(x[3]) + ' units of the drug ' + str(x[1]) + ' have been prescribed in the period')
+
 def ADM_B(conn,StaffID,StaffName):
 	print("Function B has been called.")
+	start_date = Start_Date()
+	if start_date == 0: #If the start date fails
+		return 0
+	end_date = End_Date()
+	if end_date == 0: #If the end date fails
+		return 0
+
+	if start_date > end_date: #If start date comes after end date chronologically
+		print("Error: Start date must precede end date")
+		return 0
+	query1 = 'SELECT Category, m.drug_name, m.amount, SUM(m.amount) '\
+	'FROM medications m, drugs d '\
+	'WHERE m.drug_name = d.drug_name AND CAST(m.mdate AS DATE) > CAST(%s AS DATE) AND CAST(m.mdate AS DATE) < CAST(%s AS DATE) '\
+	'GROUP BY d.category, d.drug_name' %(start_date.__str__(),end_date.__str__())
+	
+	query2 = 'SELECT Category, SUM(m.amount) '\
+	'FROM medications m, drugs d '\
+	'WHERE m.drug_name = d.drug_name AND CAST(m.mdate AS DATE) > CAST(%s AS DATE) AND CAST(m.mdate AS DATE) < CAST(%s AS DATE) '\
+	'GROUP BY Category'  %(start_date.__str__(),end_date.__str__())
+	cursor1 = conn.cursor()
+	cursor1.execute(query1)
+	cursor2 = conn.cursor()
+	cursor2.execute(query2)
+
+	print('\n')
+	for row in cursor2:
+		print('Drug Category Name: ' + str(row[0]))
+		cursor1.execute(query1)
+		TEST_B(cursor1, str(row[0]))
+		print('Totalling ' + str(row[1]) + ' units')
+		print('==============')
+		
+	# for x in cursor1:
+	# 	print(str(x[3]) + ' units of the drug ' + str(x[1]) + ' have been prescribed in the period')
+	# for row in cursor2:
+	# 	print('Overall ' + str(row[1]) + ' units of the category ' + str(row[0]) + ' have been prescribed in the period')
+
+
 	return 0
 def ADM_C(conn,StaffID,StaffName):
 	print("Function C has been called.")
