@@ -7,7 +7,18 @@ from operator import itemgetter
 
 def DOC_A(conn,StaffID,StaffName):
 	cursor = conn.cursor()
-	patient_name = raw_input ("Enter patient hcno: ")
+	cursor.execute("SELECT p.hcno FROM patients p")
+	hcno_list = cursor.fetchall()
+	hcnoList = []
+	for i in hcno_list:
+		hcnoList.append(i[0])
+	while True:
+		patient_name = raw_input ("Enter patient hcno: ")
+		if patient_name not in hcnoList:
+			print("Invalid patient HCNO, please try again.")
+		else:
+			break
+		
 	print ("Charts for patient number " + patient_name + ":")
 	chart_number_list = []
 	
@@ -35,16 +46,36 @@ def DOC_A(conn,StaffID,StaffName):
 	if select_chart not in chart_number_list:
 		print ("Invalid chart number entry")
 	else:
-		cursor.execute ("SELECT s.symptom, d.diagnosis FROM charts c, symptoms s, diagnoses d, medications m WHERE s.chart_id = '%d' AND m.chart_id = '%d' AND d.chart_id = '%d' " %(select_chart, select_chart, select_chart))
+		cursor.execute("SELECT s.symptom, s.obs_date FROM charts c, symptoms s WHERE s.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
 		print ("Chart number: "+str(select_chart))
-		print(cursor.fetchall())
+		sym_list = cursor.fetchall()
+		print(sym_list)
+		cursor.execute("SELECT d.diagnosis, d.ddate FROM charts c, diagnoses d WHERE d.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
+		diag_list = cursor.fetchall()
+		print(diag_list)
+		cursor.execute("SELECT m.drug_name, m.mdate, m.start_med, m.end_med, m.amount FROM charts c, medications m WHERE m.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
+		med_list = cursor.fetchall()
+		print(med_list)
+		
 
 	return 0
 
 def DOC_B(conn,StaffID,StaffName):
 	
 	cursor = conn.cursor()
-	patient_name = raw_input ("Enter patient hcno: ")
+	cursor.execute("SELECT p.hcno FROM patients p")
+	hcno_list = cursor.fetchall()
+	hcnoList = []
+	for i in hcno_list:
+		hcnoList.append(i[0])
+	while True:
+		patient_name = raw_input ("Enter patient hcno: ")
+		if patient_name not in hcnoList:
+			print("Invalid patient HCNO, please try again.")
+		else:
+			break
+		
+			
 	print ("Open charts for patient number " + patient_name + ":")
 	chart_number_list = []
 	
@@ -71,10 +102,21 @@ def DOC_B(conn,StaffID,StaffName):
 					
 				
 	return 0
+
 def DOC_C(conn,StaffID,StaffName):
 	
 	cursor = conn.cursor()
-	patient_name = raw_input ("Enter patient hcno: ")
+	cursor.execute("SELECT p.hcno FROM patients p")
+	hcno_list = cursor.fetchall()
+	hcnoList = []
+	for i in hcno_list:
+		hcnoList.append(i[0])	
+	while True:
+		patient_name = raw_input ("Enter patient hcno: ")
+		if patient_name not in hcnoList:
+			print("Invalid patient HCNO, please try again.")
+		else:
+			break
 	print ("Open charts for patient number " + patient_name + ":")
 	chart_number_list = []
 	
@@ -101,21 +143,24 @@ def DOC_C(conn,StaffID,StaffName):
 			
 			
 	return 0
-def DOC_D(conn,StaffID,StaffName):
-	print("Function D has been called.")
-	return 0
-def DOC_E(conn,StaffID,StaffName):
-	print("Logging Off")
-	conn.Close()
-	return 0
 
-def get_charts(x):
+def DOC_D(conn,StaffID,StaffName):
 	cursor = conn.cursor()
-	#patient_name = raw_input ("Enter patient hcno: ")
-	patient_name = int(x)
-	print ("Charts for patient number " + patient_name + ":")
+	cursor.execute("SELECT p.hcno FROM patients p")
+	hcno_list = cursor.fetchall()
+	hcnoList = []
+	for i in hcno_list:
+		hcnoList.append(i[0])
+	while True:
+		patient_name = raw_input ("Enter patient hcno: ")
+		if patient_name not in hcnoList:
+			print("Invalid patient HCNO, please try again.")
+		else:
+			break
+		
+	print ("Open charts for patient number " + patient_name + ":")
 	chart_number_list = []
-	
+		
 	if patient_name.isdigit():
 		patient_name = int(patient_name)
 		cursor.execute("SELECT * FROM charts WHERE charts.hcno = '%d'" % patient_name)
@@ -124,11 +169,29 @@ def get_charts(x):
 		
 		for i in chart_list:
 			chart_number_list.append(int(i[0]))
+			if i[3] == None:
+				#print ("Open charts for patient: "+str(patient_name))
+				print("Chart "  + i[0])
+				
+		print ("====")	
+		select_chart = int(raw_input ("Enter open chart number: "))
+		if select_chart not in chart_number_list:
+			print("Invalid chart ID")
+		else:
+			medication_name = raw_input("Enter drug name: ")
+			start_med = raw_input("Enter start date in YYYY-MM-DD format: ")
+			end_med = raw_input("Enter ending date in YYYY-MM-DD format: ")
+			amount = raw_input("Enter drug amount: ")
 			
-			if i[3] == None:				
-				print("Chart " + i[0] + " is open")
-			else:
-				print("Chart " + i[0] + " is closed")	
+			
+			cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_name), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
+			conn.commit()
+	
+	return 0
+def DOC_E(conn,StaffID,StaffName):
+	print("Logging Off")
+	conn.Close()
+	return 0
 
 def DOC_Text(StaffID,StaffName):
 	print ("\n")

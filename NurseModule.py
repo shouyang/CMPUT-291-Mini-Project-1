@@ -3,6 +3,7 @@
 
 import sqlite3
 import datetime
+from DoctorModule import *
 # Generic Functions
 def RepresentsInt(s):
     try:
@@ -248,10 +249,10 @@ def NUR_B(conn,StaffID,StaffName):
 			print ("Not a valid Integer, retry.")
 	return 0
 def NUR_C(conn,StaffID,StaffName):
-	print("Function C has been called.")
+	DOC_A(conn,StaffID,StaffName)
 	return 0
 def NUR_D(conn,StaffID,StaffName):
-	print("Function D has been called.")
+	DOC_B(conn,StaffID,StaffName)
 	return 0
 def NUR_E(conn,StaffID,StaffName):
 	print("Logging Off")
