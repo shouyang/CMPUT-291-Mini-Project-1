@@ -49,13 +49,22 @@ def DOC_A(conn,StaffID,StaffName):
 		cursor.execute("SELECT s.symptom, s.obs_date FROM charts c, symptoms s WHERE s.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
 		print ("Chart number: "+str(select_chart))
 		sym_list = cursor.fetchall()
-		print(sym_list)
+
 		cursor.execute("SELECT d.diagnosis, d.ddate FROM charts c, diagnoses d WHERE d.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
 		diag_list = cursor.fetchall()
-		print(diag_list)
+
 		cursor.execute("SELECT m.drug_name, m.mdate, m.start_med, m.end_med, m.amount FROM charts c, medications m WHERE m.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
 		med_list = cursor.fetchall()
-		print(med_list)
+
+		total_list = diag_list + med_list + sym_list
+		total_list.sort(key = lambda x: x[1]) 
+		print("Symptoms, Diagnoses and Medications for patient number: "+ str(patient_name) + "\n" + "====")
+		for item in total_list:
+			if len(item) > 2:
+				for j in item:
+					print j, 
+			else:
+				print(item[0]+" "+item[1])
 		
 
 	return 0
@@ -183,9 +192,20 @@ def DOC_D(conn,StaffID,StaffName):
 			end_med = raw_input("Enter ending date in YYYY-MM-DD format: ")
 			amount = raw_input("Enter drug amount: ")
 			
+			cursor.execute("SELECT d.sug_amount FROM dosages d WHERE d.drug_name = '%s'" % medication_name)
+			tooMuch = cursor.fetchall()
+			#cursor.execute("SELECT r.drug_name FROM reportedallergies r WHERE r.drug_name = '%s' AND r.hcno = '%d'" %(medication_name, patient_name))
+			#rep_alg = cursor.fetchall()
 			
-			cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_name), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
-			conn.commit()
+			
+			if amount > tooMuch:
+				confirmation = input ("WARNING: Dosage is higher than suggested amount! Do you want to proceed (y/n)")
+				confirmation = confirmation.lower()
+				if confirmation == 'n':
+					print("na")
+				else:			
+					cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_name), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
+					conn.commit()
 	
 	return 0
 def DOC_E(conn,StaffID,StaffName):
