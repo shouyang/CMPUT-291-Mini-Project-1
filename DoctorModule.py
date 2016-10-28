@@ -213,7 +213,6 @@ def DOC_D(conn,StaffID,StaffName):
 			
 			cursor.execute("SELECT r.drug_name FROM reportedallergies r WHERE r.hcno = '%d' AND r.drug_name = '%s'" % (patient_num, medication_name))
 			rep_alg = cursor.fetchall()
-			
 
 			
 			while True:
@@ -228,7 +227,7 @@ def DOC_D(conn,StaffID,StaffName):
 						else:
 								cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
 								conn.commit()	
-				elif medication_name == rep_alg[0][0]:
+				elif len(rep_alg) > 0 and  medication_name in rep_alg[0][0]:
 					print
 					print("WARNING: Patient has a reported allergy to "+medication_name+":")
 					confirmation = raw_input ("Enter 'y' to continue or press 'n' cancel: ")
