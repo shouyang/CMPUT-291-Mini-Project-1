@@ -40,30 +40,36 @@ def DOC_A(conn,StaffID,StaffName):
 				print("Chart " + i[0] + " is closed")
 		
 	print("====")
-	select_chart = int(raw_input ("Enter desired chart number: "))#gets input for selected chart
+	while True:
+		try:
+			select_chart = int(raw_input ("Enter open chart number: ")) #select desired chart
+		except ValueError:
+			print("Please enter a valid integer")
+			continue
+		
+		if select_chart not in chart_number_list: #checks if the chart number is valid
+			print ("Invalid chart number entry")
+		else: # if the chart numnber is valid continue operation
+			cursor.execute("SELECT s.symptom, s.obs_date FROM charts c, symptoms s WHERE s.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
+			print ("Chart number: "+str(select_chart))
+			sym_list = cursor.fetchall()
 	
-	if select_chart not in chart_number_list: #checks if the chart number is valid
-		print ("Invalid chart number entry")
-	else: # if the chart numnber is valid continue operation
-		cursor.execute("SELECT s.symptom, s.obs_date FROM charts c, symptoms s WHERE s.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
-		print ("Chart number: "+str(select_chart))
-		sym_list = cursor.fetchall()
-
-		cursor.execute("SELECT d.diagnosis, d.ddate FROM charts c, diagnoses d WHERE d.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
-		diag_list = cursor.fetchall()
-
-		cursor.execute("SELECT m.drug_name, m.mdate, m.start_med, m.end_med, m.amount FROM charts c, medications m WHERE m.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
-		med_list = cursor.fetchall()
-
-		total_list = diag_list + med_list + sym_list
-		total_list.sort(key = lambda x: x[1]) #little hack to arrange the sum of 3 lists by a single index in each list
-		print("Symptoms, Diagnoses and Medications for patient number: "+ str(patient_num) + "\n" + "====")
-		for item in total_list:
-			if len(item) > 2:#prints the medications items which are a tuple longer than 2 items
-				for j in item:
-					print j, 
-			else:
-				print(item[0]+" "+item[1]) # prints the two item tuples from diagnoses and symptoms
+			cursor.execute("SELECT d.diagnosis, d.ddate FROM charts c, diagnoses d WHERE d.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
+			diag_list = cursor.fetchall()
+	
+			cursor.execute("SELECT m.drug_name, m.mdate, m.start_med, m.end_med, m.amount FROM charts c, medications m WHERE m.chart_id = c.chart_id AND c.chart_id = '%d' " %select_chart)
+			med_list = cursor.fetchall()
+	
+			total_list = diag_list + med_list + sym_list
+			total_list.sort(key = lambda x: x[1]) #little hack to arrange the sum of 3 lists by a single index in each list
+			print("Symptoms, Diagnoses and Medications for patient number: "+ str(patient_num) + "\n" + "====")
+			for item in total_list:
+				if len(item) > 2:#prints the medications items which are a tuple longer than 2 items
+					for j in item:
+						print j, 
+				else:
+					print(item[0]+" "+item[1]) # prints the two item tuples from diagnoses and symptoms
+		break
 		
 
 	return 0
@@ -101,14 +107,20 @@ def DOC_B(conn,StaffID,StaffName):
 				print("Chart "  + i[0])
 				
 		print ("====")
-		select_chart = int(raw_input ("Enter open chart number: ")) #opens selected chart
-		if select_chart not in chart_number_list:
-			print("Invalid chart ID")
-		else:
-			symptom_text = raw_input("Enter symptom: ") #gathers symptom data from user
-			cursor.execute( "INSERT INTO symptoms VALUES (?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(symptom_text) ))
-			#above line inserts the entered data into the symptoms table, with the date set to current
-			conn.commit()	
+		while True:
+			try:
+				select_chart = int(raw_input ("Enter open chart number: ")) #select desired chart
+			except ValueError:
+				print("Please enter a valid integer")
+				continue
+			if select_chart not in chart_number_list:
+				print("Invalid chart ID")
+			else:
+				symptom_text = raw_input("Enter symptom: ") #gathers symptom data from user
+				cursor.execute( "INSERT INTO symptoms VALUES (?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(symptom_text) ))
+				#above line inserts the entered data into the symptoms table, with the date set to current
+				conn.commit()	
+			break
 					
 				
 	return 0
@@ -146,14 +158,20 @@ def DOC_C(conn,StaffID,StaffName):
 				print("Chart "  + i[0])
 				
 		print ("====")	
-		select_chart = int(raw_input ("Enter open chart number: ")) #select desired chart
-		if select_chart not in chart_number_list:
-			print("Invalid chart ID")
-		else:
-			diagnoses_text = raw_input("Enter diagnoses: ") #gathers diagnosis data from user
-			cursor.execute( "INSERT INTO diagnoses VALUES (?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(diagnoses_text) ))
-			#query to insert the data into the diagnoses table
-			conn.commit()
+		while True:
+			try:
+				select_chart = int(raw_input ("Enter open chart number: ")) #select desired chart
+			except ValueError:
+				print("Please enter a valid integer")
+				continue
+			if select_chart not in chart_number_list:
+				print("Invalid chart ID")
+			else:
+				diagnoses_text = raw_input("Enter diagnoses: ") #gathers diagnosis data from user
+				cursor.execute( "INSERT INTO diagnoses VALUES (?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(diagnoses_text) ))
+				#query to insert the data into the diagnoses table
+				conn.commit()
+			break
 			
 			
 	return 0
@@ -190,56 +208,60 @@ def DOC_D(conn,StaffID,StaffName):
 				#print ("Open charts for patient: "+str(patient_num))
 				print("Chart "  + i[0])
 				
-		print ("====")	
-		select_chart = int(raw_input ("Enter open chart number: ")) #select desired chart
-		if select_chart not in chart_number_list:
-			print("Invalid chart ID")
-		else:
-			alg_list = []
-			
-			medication_name = raw_input("Enter drug name: ")
-			start_med = raw_input("Enter start date in YYYY-MM-DD format: ")
-			end_med = raw_input("Enter ending date in YYYY-MM-DD format: ")
-			amount = int(input("Enter drug amount in milligrams: "))
-			
-			cursor.execute("SELECT d.sug_amount FROM dosage d WHERE d.drug_name = '%s'" % medication_name)
-			tooMuch = cursor.fetchall()
-			
-			cursor.execute("SELECT DISTINCT d.age_group FROM dosage d, patients p WHERE d.drug_name = '%s' AND p.age_group = d.age_group" % medication_name)
-			drug_age_range = cursor.fetchall()
-			
-			cursor.execute("SELECT p.age_group FROM patients p WHERE p.hcno = '%d'" % patient_num)
-			patient_age_range = cursor.fetchall()	
-			
-			cursor.execute("SELECT r.drug_name FROM reportedallergies r WHERE r.hcno = '%d' AND r.drug_name = '%s'" % (patient_num, medication_name))
-			rep_alg = cursor.fetchall()
-
-			
-			while True:
-				if patient_age_range == drug_age_range:
-					if amount > tooMuch[0][0]:
-						print("WARNING: Dosage is higher than suggested amount!")
-						print("Suggested amount for a patient in this age range is "+str(tooMuch[0][0])+"mg.")
-						confirmation = raw_input ("Enter 'y' to continue or press 'n' to change amount: ")
+		print ("====")
+		while True:
+			try:
+				select_chart = int(raw_input ("Enter open chart number: ")) #select desired chart
+			except ValueError:
+				print("Please enter a valid integer")
+				continue
+			if select_chart not in chart_number_list:
+				print("Invalid chart ID")
+			else:
+				alg_list = []
+				
+				medication_name = raw_input("Enter drug name: ")
+				start_med = raw_input("Enter start date in YYYY-MM-DD format: ")
+				end_med = raw_input("Enter ending date in YYYY-MM-DD format: ")
+				amount = int(input("Enter drug amount in milligrams: "))
+				
+				cursor.execute("SELECT d.sug_amount FROM dosage d WHERE d.drug_name = '%s'" % medication_name)
+				tooMuch = cursor.fetchall()
+				
+				cursor.execute("SELECT DISTINCT d.age_group FROM dosage d, patients p WHERE d.drug_name = '%s' AND p.age_group = d.age_group" % medication_name)
+				drug_age_range = cursor.fetchall()
+				
+				cursor.execute("SELECT p.age_group FROM patients p WHERE p.hcno = '%d'" % patient_num)
+				patient_age_range = cursor.fetchall()	
+				
+				cursor.execute("SELECT r.drug_name FROM reportedallergies r WHERE r.hcno = '%d' AND r.drug_name = '%s'" % (patient_num, medication_name))
+				rep_alg = cursor.fetchall()
+	
+				
+				while True:
+					if patient_age_range == drug_age_range:
+						if amount > tooMuch[0][0]:
+							print("WARNING: Dosage is higher than suggested amount!")
+							print("Suggested amount for a patient in this age range is "+str(tooMuch[0][0])+"mg.")
+							confirmation = raw_input ("Enter 'y' to continue or press 'n' to change amount: ")
+							confirmation = confirmation.lower()
+							if confirmation == "n":
+								amount = int(input("Enter drug amount in milligrams: "))
+							else:
+									cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
+									conn.commit()	
+					elif len(rep_alg) > 0 and  medication_name in rep_alg[0][0]:
+						print
+						print("WARNING: Patient has a reported allergy to "+medication_name+":")
+						confirmation = raw_input ("Enter 'y' to continue or press 'n' cancel: ")
 						confirmation = confirmation.lower()
 						if confirmation == "n":
-							amount = int(input("Enter drug amount in milligrams: "))
+							break
 						else:
-								cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
-								conn.commit()	
-				elif len(rep_alg) > 0 and  medication_name in rep_alg[0][0]:
-					print
-					print("WARNING: Patient has a reported allergy to "+medication_name+":")
-					confirmation = raw_input ("Enter 'y' to continue or press 'n' cancel: ")
-					confirmation = confirmation.lower()
-					if confirmation == "n":
-						break
-					else:
-						cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
-						conn.commit()	
-					break
+							cursor.execute("INSERT INTO medications VALUES (?,?,?,?,?,?,?,?)", (int(patient_num), int(select_chart), int(StaffID), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), str(start_med), str(end_med), str(amount), str(medication_name)))
+							conn.commit()
 				break
-	
+			
 	return 0
 def DOC_E(conn,StaffID,StaffName):
 	print("Logging Off")
