@@ -255,6 +255,41 @@ def NUR_D(conn,StaffID,StaffName):
 	DOC_B(conn,StaffID,StaffName)
 	return 0
 def NUR_E(conn,StaffID,StaffName):
+	cursor = conn.cursor()
+	# Get list of drugs
+	cursor.execute("SELECT drug_name FROM drugs")
+	drugs = []
+	for row in cursor:
+		drugs.append(row[0])
+	# Get list of valid Hcnos
+	cursor.execute("SELECT hcno FROM patients")
+	hcnos = []
+	for row in cursor:
+		hcnos.append(row[0])
+	# Let user select an HD
+	while True:
+		usr_hcno = raw_input("HCNO> ")
+		if usr_hcno not in hcnos:
+			print ("HCNO not valid, retry.")
+			continue
+		else:
+			break
+	# Let user slect a drug
+	while True:
+		usr_drug = raw_input("DRUG> ")
+		if usr_drug not in drugs:
+			print ("DRUG not valid, retry.")
+			continue
+		else:
+			break
+	try:
+		cursor.execute("INSERT INTO reportedallergies VALUES (?,?)", (usr_hcno,usr_drug))
+		conn.commit()
+		print ("Update Done")
+	except:
+		print ("A database error has occurred, returning to menu.")
+	return 0
+def NUR_F(conn,StaffID,StaffName):
 	print("Logging Off")
 	conn.close()
 	return 0
@@ -268,7 +303,8 @@ def NUR_Text(StaffID,StaffName):
 	print ("B - Close Chart For Patient")
 	print ("C - View Charts By Patient")
 	print ("D - Open Chart & Add Symptom")
-	print ("E - Logout and Exit")
+	print ("E - Add Allergy To Patient")	
+	print ("F - Logout and Exit")
 	print ("====")
 
 def NUR(conn = sqlite3.connect("hospital.db"), StaffID = "111", StaffName = "John Doe"):
@@ -286,6 +322,8 @@ def NUR(conn = sqlite3.connect("hospital.db"), StaffID = "111", StaffName = "Joh
 			NUR_D(conn,StaffID,StaffName)
 		elif USR_Selection.upper() == "E":
 			NUR_E(conn,StaffID,StaffName)
+		elif USR_Selection.upper() == "F":
+			NUR_F(conn,StaffID,StaffName)
 			break
 		# Other Unrecognized input
 		else:
