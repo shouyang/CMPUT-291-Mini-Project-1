@@ -245,7 +245,7 @@ def ADM_D(conn,StaffID,StaffName):
 		i += 1
 	avgDict = {} #Computes the average amount of drug prescribed for each diagnoses
 	for key in diagDict:
-		avgDict[key] = diagDict[key][0] / diagDict[key][1]
+		avgDict[key] = int(diagDict[key][0]) / int(diagDict[key][1])
 	temp = sorted(avgDict, key=avgDict.__getitem__, reverse =True) #Sorted by average
 	for item in temp:
 		print(item) #Success?
