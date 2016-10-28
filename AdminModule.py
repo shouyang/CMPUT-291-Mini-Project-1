@@ -6,36 +6,70 @@ import datetime
 
 def Start_Date(): #Asks for the Year/Month/Day and creates a date object
 	print("Please enter the year of the start date (YYYY)")
-	start_date_year = int(raw_input("Starting Year> "))
-	
+	try:
+		start_date_year = int(raw_input("Starting Year> "))
+	except Exception as e:
+		print('\n')
+		print("Date Entry Error, Returning To Main Menu")
+		return 0
+
 	print("Please enter the month of the start date (MM)")
-	start_date_month = int(raw_input("Starting Month> "))
+	try:
+		start_date_month = int(raw_input("Starting Month> "))
+	except Exception as e:
+		print('\n')
+		print("Date Entry Error, Returning To Main Menu")
+		return 0
 
 	print("Please enter the day of the start date (DD)")
-	start_date_day = int(raw_input("Starting Day> "))
+	try:
+		start_date_day = int(raw_input("Starting Day> "))
+	except Exception as e:
+		print('\n')
+		print("Date Entry Error, Returning To Main Menu")
+		return 0
+	
 
 	try: #After getting the dates it creates the object
 		start_date = datetime.date(start_date_year,start_date_month,start_date_day)
 		return start_date
 	except Exception as e:
 		print('\n')
-		print("Date Entry Error")
+		print("Date Entry Error, Returning To Main Menu")
 		print e
 		return 0
 
 def End_Date(): #Asks for the Year/Month/Day and creates a date object same as above
 	print("Please enter the year of the end date (YYYY)")
-	end_date_year = int(raw_input("End Year> "))
+	try:
+		end_date_year = int(raw_input("End Year> "))
+	except Exception as e:
+		print('\n')
+		print("Date Entry Error, Returning To Main Menu")
+		return 0
+	
 	print("Please enter the month of the end date (MM)")
-	end_date_month = int(raw_input("End Month> "))
+	try:
+		end_date_month = int(raw_input("End Month> "))
+	except Exception as e:
+		print('\n')
+		print("Date Entry Error, Returning To Main Menu")
+		return 0
+	
 	print("Please enter the day of the End date (DD)")
-	end_date_day = int(raw_input("End Day> "))
+	try:
+		end_date_day = int(raw_input("End Day> "))
+	except Exception as e:
+		print('\n')
+		print("Date Entry Error, Returning To Main Menu")
+		return 0
+	
 	try:
 		end_date = datetime.date(end_date_year,end_date_month,end_date_day)
 		return end_date
 	except Exception as e:
 		print('\n')
-		print("Date Entry Error")
+		print("Date Entry Error, Returning To Main Menu")
 		print e
 		return 0
 
@@ -226,7 +260,7 @@ def ADM_D(conn,StaffID,StaffName):
 
 def ADM_E(conn,StaffID,StaffName):
 	print("Logging Off")
-	conn.close()
+	conn.Close()
 	return 0
 
 def ADM_Text(StaffID,StaffName):
