@@ -226,7 +226,7 @@ def ADM_D(conn,StaffID,StaffName):
 
 def ADM_E(conn,StaffID,StaffName):
 	print("Logging Off")
-	conn.Close()
+	conn.close()
 	return 0
 
 def ADM_Text(StaffID,StaffName):
