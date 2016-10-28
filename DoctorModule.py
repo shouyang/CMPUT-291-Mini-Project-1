@@ -244,7 +244,7 @@ def DOC_D(conn,StaffID,StaffName):
 	return 0
 def DOC_E(conn,StaffID,StaffName):
 	print("Logging Off")
-	conn.Close()
+	conn.close()
 	return 0
 
 def DOC_Text(StaffID,StaffName):

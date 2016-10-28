@@ -256,7 +256,7 @@ def NUR_D(conn,StaffID,StaffName):
 	return 0
 def NUR_E(conn,StaffID,StaffName):
 	print("Logging Off")
-	conn.Close()
+	conn.close()
 	return 0
 
 def NUR_Text(StaffID,StaffName):
